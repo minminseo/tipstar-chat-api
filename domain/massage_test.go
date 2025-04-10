@@ -89,38 +89,40 @@ func TestDelete(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		callerID    domain.UserID
-		ownerID     domain.UserID
+		msgUserID   domain.UserID
+		requestUser domain.UserID
 		deleted     bool
 		expectError bool
 	}{
-		{"正常系", "user1", "user1", false, false},
-		{"他人が削除", "user2", "user1", false, true},
-		{"既に削除済み", "user1", "user1", true, true},
+		{"正常系：本人で未削除", "user1", "user1", false, false},
+		{"異常系：他人のメッセージ", "user1", "user2", false, true},
+		{"異常系：すでに削除済み", "user1", "user1", true, true},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var deletedAt *time.Time
 			if tt.deleted {
-				t := now
-				deletedAt = &t
+				deletedAt = &now
 			}
 
 			msg := &domain.Message{
-				UserID:    tt.ownerID,
+				UserID:    tt.msgUserID,
 				DeletedAt: deletedAt,
 			}
 
-			err := msg.Delete(tt.callerID)
+			err := msg.Delete(tt.requestUser)
+
 			if tt.expectError && err == nil {
 				t.Errorf("期待したエラーが返されなかった")
 			}
 			if !tt.expectError && err != nil {
-				t.Errorf("想定外のエラー: %v", err)
+				t.Errorf("想定外のエラーが返された: %v", err)
 			}
+
+			// 削除成功時のみ、DeletedAt が更新されていることを確認
 			if !tt.expectError && msg.DeletedAt == nil {
-				t.Errorf("DeletedAt が設定されていない")
+				t.Errorf("削除が成功したはずなのに DeletedAt が更新されていません")
 			}
 		})
 	}

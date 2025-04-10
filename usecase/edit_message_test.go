@@ -16,14 +16,11 @@ type mockEditRepo struct {
 func (m *mockEditRepo) FindByID(id domain.MessageID) (*domain.Message, error) {
 	return m.FindByIDFn(id)
 }
+func (m *mockEditRepo) Insert(_ *domain.Message) error   { return nil }
+func (m *mockEditRepo) Delete(_ *domain.Message) error   { return nil }
+func (m *mockEditRepo) Update(msg *domain.Message) error { return m.UpdateFn(msg) }
 
-func (m *mockEditRepo) Insert(_ *domain.Message) error { return nil }
-func (m *mockEditRepo) Delete(_ *domain.Message) error { return nil }
-func (m *mockEditRepo) Update(msg *domain.Message) error {
-	return m.UpdateFn(msg)
-}
-
-func TestEditMessageUseCase_Execute(t *testing.T) {
+func TestEditMessageUsecase_Execute(t *testing.T) {
 	now := time.Now()
 
 	tests := []struct {
@@ -38,8 +35,8 @@ func TestEditMessageUseCase_Execute(t *testing.T) {
 		{
 			name: "正常系",
 			message: &domain.Message{
-				ID:        "m1",
-				UserID:    "u1",
+				ID:        domain.MessageID("m1"),
+				UserID:    domain.UserID("u1"),
 				Content:   "old",
 				CreatedAt: now,
 				UpdatedAt: now,
@@ -59,8 +56,8 @@ func TestEditMessageUseCase_Execute(t *testing.T) {
 		{
 			name: "他人による編集",
 			message: &domain.Message{
-				ID:     "m1",
-				UserID: "u1",
+				ID:     domain.MessageID("m1"),
+				UserID: domain.UserID("u1"),
 			},
 			userID:      "u2",
 			newContent:  "new",
@@ -69,8 +66,8 @@ func TestEditMessageUseCase_Execute(t *testing.T) {
 		{
 			name: "空文字編集",
 			message: &domain.Message{
-				ID:     "m1",
-				UserID: "u1",
+				ID:     domain.MessageID("m1"),
+				UserID: domain.UserID("u1"),
 			},
 			userID:      "u1",
 			newContent:  "",
@@ -89,8 +86,8 @@ func TestEditMessageUseCase_Execute(t *testing.T) {
 				},
 			}
 
-			uc := usecase.NewEditMessageUseCase(mock)
-			err := uc.Execute("m1", tt.userID, tt.newContent)
+			uc := usecase.NewEditMessageUsecase(mock)
+			err := uc.Execute(domain.MessageID("m1"), domain.UserID(tt.userID), tt.newContent)
 
 			if tt.expectError && err == nil {
 				t.Errorf("期待したエラーが返されなかった")
