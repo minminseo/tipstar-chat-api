@@ -10,18 +10,17 @@ type EditMessageUseCase struct {
 	repo domain.MessageRepository
 }
 
-// インフラ層のインターフェースを満たすDB操作に関する実装をユースケース層に依存注入するコンストラクタ関数
-func NewEditMessageUseCase(repo domain.MessageRepository) *EditMessageUseCase {
+// インフラ層のインターフェースを満たすDB操作に関する実装をユースケース層に依存注入するコンストラクタ関数（インフラ層に依存せずここで使えるようにする）
+func NewEditMessageUsecase(repo domain.MessageRepository) *EditMessageUseCase {
 
 	// 明示的にフィールドrepoに引数repo（インターフェース）を代入して依存注入（インフラ層の実装をユースケースに層に渡す。）
 	return &EditMessageUseCase{repo: repo}
 }
 
-// インフラ層のインターフェース越しでDB操作をする関数
-func (uc *EditMessageUseCase) Execute(messageID string, userID string, newContent string) error {
+func (uc *EditMessageUseCase) Execute(messageID domain.MessageID, userID domain.UserID, newContent string) error {
 
 	// クライアントから渡されたmessageIDをドメイン型（domain.MessageID）にキャストし、メッセージを取得するFindByID関数（抽象）に引数として渡す
-	msg, err := uc.repo.FindByID(domain.MessageID(messageID))
+	msg, err := uc.repo.FindByID(messageID)
 	if err != nil {
 		return err
 	}
@@ -30,7 +29,7 @@ func (uc *EditMessageUseCase) Execute(messageID string, userID string, newConten
 	}
 
 	// クライアントから渡されたuserIDをドメイン型（domain.UserID）にキャストし、メッセージを編集する権限があるか判別するCanEdit関数に引数として渡す
-	if !msg.CanEdit(domain.UserID(userID)) {
+	if !msg.CanEdit(userID) {
 		return errors.New("このメッセージを編集する権限がありません")
 	}
 

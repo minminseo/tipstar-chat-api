@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -82,5 +83,6 @@ func (m *Message) Delete(by UserID) error {
 	// if全て通過したら、論理削除
 	now := time.Now()
 	m.DeletedAt = &now
+	fmt.Println(m.DeletedAt)
 	return nil
 }

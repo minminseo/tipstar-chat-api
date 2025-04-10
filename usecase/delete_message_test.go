@@ -16,14 +16,11 @@ type mockDeleteRepo struct {
 func (m *mockDeleteRepo) FindByID(id domain.MessageID) (*domain.Message, error) {
 	return m.FindByIDFn(id)
 }
+func (m *mockDeleteRepo) Insert(_ *domain.Message) error   { return nil }
+func (m *mockDeleteRepo) Update(_ *domain.Message) error   { return nil }
+func (m *mockDeleteRepo) Delete(msg *domain.Message) error { return m.DeleteFn(msg) }
 
-func (m *mockDeleteRepo) Insert(_ *domain.Message) error { return nil }
-func (m *mockDeleteRepo) Update(_ *domain.Message) error { return nil }
-func (m *mockDeleteRepo) Delete(msg *domain.Message) error {
-	return m.DeleteFn(msg)
-}
-
-func TestDeleteMessageUseCase_Execute(t *testing.T) {
+func TestDeleteMessageUsecase_Execute(t *testing.T) {
 	now := time.Now()
 
 	tests := []struct {
@@ -37,8 +34,8 @@ func TestDeleteMessageUseCase_Execute(t *testing.T) {
 		{
 			name: "正常系",
 			message: &domain.Message{
-				ID:        "m1",
-				UserID:    "u1",
+				ID:        domain.MessageID("m1"),
+				UserID:    domain.UserID("u1"),
 				CreatedAt: now,
 			},
 			userID:      "u1",
@@ -54,8 +51,8 @@ func TestDeleteMessageUseCase_Execute(t *testing.T) {
 		{
 			name: "他人が削除",
 			message: &domain.Message{
-				ID:     "m1",
-				UserID: "u1",
+				ID:     domain.MessageID("m1"),
+				UserID: domain.UserID("u1"),
 			},
 			userID:      "u2",
 			expectError: true,
@@ -63,8 +60,8 @@ func TestDeleteMessageUseCase_Execute(t *testing.T) {
 		{
 			name: "既に削除済み",
 			message: &domain.Message{
-				ID:        "m1",
-				UserID:    "u1",
+				ID:        domain.MessageID("m1"),
+				UserID:    domain.UserID("u1"),
 				DeletedAt: &now,
 			},
 			userID:      "u1",
@@ -83,8 +80,8 @@ func TestDeleteMessageUseCase_Execute(t *testing.T) {
 				},
 			}
 
-			uc := usecase.NewDeleteMessageUseCase(mock)
-			err := uc.Execute("m1", tt.userID)
+			uc := usecase.NewDeleteMessageUsecase(mock)
+			err := uc.Execute(domain.MessageID("m1"), domain.UserID(tt.userID))
 
 			if tt.expectError && err == nil {
 				t.Errorf("期待したエラーが返されなかった")
