@@ -19,14 +19,14 @@ func ToDomainModel(m *MessageModel, isAuthor bool) *domain.Message {
 }
 
 // ドメインモデル構造体をDBモデル構造体に変換する関数
-func ToDbModel(m *domain.Message) *MessageModel {
+func ToDbModel(msg *domain.Message) *MessageModel {
 	return &MessageModel{
-		ID:        string(m.ID),
-		TipID:     string(m.TipID),
-		UserID:    string(m.UserID),
-		Content:   m.Content,
-		CreatedAt: m.CreatedAt,
-		UpdatedAt: m.UpdatedAt,
-		DeletedAt: m.DeletedAt,
+		ID:        string(msg.ID),
+		TipID:     string(msg.TipID),
+		UserID:    string(msg.UserID),
+		Content:   msg.Content,
+		CreatedAt: msg.CreatedAt,
+		UpdatedAt: msg.UpdatedAt,
+		DeletedAt: msg.DeletedAt,
 	}
 }
