@@ -1,13 +1,21 @@
 package usecase
 
-import "github.com/minminseo/tipstar-chat-api/domain"
+import (
+	"context"
 
-// ユースケースの実装をインターフェースとして定義し、ハンドラ層はこのインターフェースだけに依存してユースケース層の実装に依存しないようにする。
+	"github.com/minminseo/tipstar-chat-api/domain"
+)
 
-type EditMessageInput interface {
-	Execute(messageID domain.MessageID, userID domain.UserID, newContent string) error
+// ユースケースの実装をインターフェースとして定義し、プレゼンテーション層はこのインターフェースだけに依存しユースケース内部の実装を隠す。
+
+// HTTP経由（Rest API）のリクエスト用のユースケース
+type OnlyRestUsecase interface {
+	GetAllMessages(ctx context.Context, tipID string) ([]*domain.Message, error)
 }
 
-type DeleteMessageInput interface {
-	Execute(messageID domain.MessageID, userID domain.UserID) error
+// Websocket経由のリクエストのユースケース
+type OnlyWSUsecase interface {
+	ExecuteSendMessage(ctx context.Context, msg *domain.Message) error
+	EditMessage(ctx context.Context, messageID domain.MessageID, userID domain.UserID, newContent string) error
+	DeleteMessage(ctx context.Context, messageID domain.MessageID, userID domain.UserID) error
 }
